@@ -1,0 +1,41 @@
+common:
+  output_directory: dataset
+
+steps:
+# 1: Preprocess data
+  - type: preprocess
+    parameters:
+      inputs:
+        - WikiMatrix.en-ru.en
+        - WikiMatrix.en-ru.ru
+      outputs:
+        - WikiMatrix_preprocessed.en-ru.en
+        - WikiMatrix_preprocessed.en-ru.ru
+      preprocessors:
+        - WhitespaceNormalizer: { }
+      compare: all
+
+# 2: Filter data
+  - type: filter
+    parameters:
+      inputs:
+        - WikiMatrix_preprocessed.en-ru.en
+        - WikiMatrix_preprocessed.en-ru.ru
+      outputs:
+        - WikiMatrix_preprocessed_filtered.en
+        - WikiMatrix_preprocessed_filtered.ru
+      filters:
+        - LanguageIDFilter:
+            id_method: cld2
+            languages: [ en, ru ]
+            thresholds: [ 0.5, 0.5 ]
+        - RegExpFilter:
+            regexps: ^[ \t]+|[ \t]+$
+        - LengthRatioFilter:
+            unit: word
+            threshold: 3
+        - LongWordFilter:
+            threshold: 37
+        - SimilarityFilter:
+            threshold: 0.8
+      compare: all
